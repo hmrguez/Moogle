@@ -10,26 +10,25 @@ body {
     flex-direction: column;
 }
 
+:root {
+    --clr: #00dfc4;
+    --sec: rgba(255, 255, 255, 0.25);
+}
+
 h1:focus {
     outline: none;
 }
 
-.header{
+.header {
     justify-content: center;
     display: flex;
     gap: 10px;
-    margin-top: 1em;
+    margin: 1em;
 }
 
 a,
 .btn-link {
     color: #0071c1;
-}
-
-.btn-primary {
-    color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
 }
 
 .content {
@@ -77,92 +76,12 @@ a,
     content: "An error has occurred."
 }
 
-.btn-main {
-    background-color: #27282c;
-    font-weight: bolder;
-    justify-content: center;
-    position: relative;
-    color: var(--sec);
-    text-decoration: none;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-weight: 400;
-    padding: 10px 20px;
-    transition: 0.5s;
-    border: none;
-    border-radius: 5px;
-}
-
-.btn-main:hover {
-    color: var(--clr);
-    background: var(--clr);
-    box-shadow: 0 0 35px var(--clr);
-}
-
-.btn-main::before {
-    content: '';
-    position: absolute;
-    inset: 2px;
-    background: #27282c;
-    border: none;
-}
-
-.btn-main span {
-    border: none;
-    position: relative;
-}
-
-.btn-main i {
-    border: none;
-    position: absolute;
-    inset: 0;
-    display: block;
-}
-
-.btn-main i::before {
-    border: none;
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 80%;
-    width: 10px;
-    height: 4px;
-    background-color: #27282c;
-    transform: translateX(-50%) skewX(325deg);
-    transition: 0.5s;
-}
-
-.btn-main:hover i::before {
-    width: 20px;
-    left: 20%;
-}
-
-.btn-main i::after {
-    border: none;
-    content: '';
-    position: absolute;
-    bottom: 0;
-    right: 80%;
-    width: 10px;
-    height: 4px;
-    background-color: #27282c;
-    transform: translateX(-50%) skewX(325deg);
-    transition: 0.5s;
-}
-
-.btn-main:hover i::after {
-    width: 20px;
-    right: 20%;
-}
-:root{
-    --clr: #00dfc4;
-    --sec: rgba(255, 255, 255, 0.25);
-}
-.inputBox{
+.inputBox {
     position: relative;
     width: 250px;
 }
-.inputBox input{
+
+.inputBox input {
     width: 100%;
     padding: 10px;
     border: 1px solid rgba(255, 255, 255, 0.25);
@@ -173,20 +92,22 @@ a,
     font-size: 1em;
     transition: 0.5s;
 }
-.inputBox span{
+
+.inputBox span {
     position: absolute;
     left: 0;
     padding: 10px;
     pointer-events: none;
     font-size: 1em;
-    color: rgba(255, 255, 255, 0.25);;
+    color: rgba(255, 255, 255, 0.25);
+    ;
     text-transform: uppercase;
     transition: .3s;
 }
 
 
-.inputBox input:valid ~ span,
-.inputBox input:focus ~ span{
+.inputBox input:valid~span,
+.inputBox input:focus~span {
     color: #00dfc4;
     transform: translateX(10px) translateY(-7px);
     font-size: 0.65em;
@@ -198,6 +119,75 @@ a,
 }
 
 .inputBox input:valid,
-.inputBox input:focus{
+.inputBox input:focus {
     border: 1px solid var(--clr);
+}
+
+.btn-main{
+    position: relative;
+    background: var(--sec);
+    color: var(--sec);
+    text-decoration: none;
+    text-transform: uppercase;
+    font-weight: 400;
+    transition: 0.5s;
+    letter-spacing: .1em;
+    border: none;
+    border-radius: 5px;
+}
+.btn-main:hover{
+    background: var(--clr);
+    box-shadow: 0 0 35px var(--clr);
+    color: var(--clr);
+}
+.btn-main::before{
+    border-radius: 5px;
+    content: '';
+    position: absolute;
+    inset: 0.9px;
+    background: #27282c;
+}
+.btn-main span{
+    position: relative;
+    z-index: 1;
+}
+.btn-main i{
+    position: absolute;
+    inset: 0;
+    display: block;
+    border: none;
+}
+.btn-main i::before{
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 80%;
+    width: 10px;
+    height: 4px;
+    background: #27282c;
+    transform: translateX(-50%) skewX(325deg);
+    transition: 0.5s;
+}
+.btn-main:hover i::before{
+    width: 20px;
+    left: 20%;
+}
+.btn-main i::after{
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 20%;
+    width: 10px;
+    height: 4px;
+    background: #27282c;
+    transform: translateX(-50%) skewX(325deg);
+    transition: 0.5s;
+}
+.btn-main:hover i::after{
+    width: 20px;
+    left: 80%;
+}
+.top{
+    font-weight: bold;
+    
 }

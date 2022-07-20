@@ -2,7 +2,7 @@
 
 <PageTitle>Moogle!</PageTitle>
 
-<h1>🔍 Moogle!</h1>
+<h1 class="top">Moogle</h1>
 
 
 <div class="header">
@@ -18,7 +18,7 @@
 @if (!string.IsNullOrEmpty(result.Suggestion))
 {
     <div class="suggestion">
-        <p>¿Quisite decir <strong><a href="#">@result.Suggestion</a></strong>?</p>
+        <p>¿Quisiste decir <strong><a href="#">@result.Suggestion</a></strong>?</p>
     </div>
 }
 
@@ -29,7 +29,6 @@
             <div class="item">
                 <p class="title">@item.Title</p>
                 <p>... @item.Snippet ...</p>
-                <p># @item.Score# </p>
             </div>
         </li>
     }
