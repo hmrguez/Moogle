@@ -10,10 +10,10 @@ public class Book
         SplittedText = FullText.Split(new char[] { ' ', ',', ';', ':' }, StringSplitOptions.RemoveEmptyEntries);
     }
 
-    public string Title { get; set; }
-    public string FullText { get; set; }
-    public Dictionary<string, float> Repetitions { get; set; }
-    public string[] SplittedText { get; set; }
+    public string Title { get; }
+    public string FullText { get; }
+    public Dictionary<string, float> Repetitions { get; }
+    public string[] SplittedText { get; }
 }
 
 public static class Helper
