@@ -14,26 +14,9 @@ public class Book
     public string FullText { get; set; }
     public Dictionary<string, float> Repetitions { get; set; }
     public string[] SplittedText { get; set; }
-
-    public IEnumerable<string> GetWords()
-    {
-        foreach (var item in SplittedText)
-        {
-            yield return item;
-        }
-    }
 }
 
 public static class Helper
 {
-    public static IEnumerable<string> Words(this IEnumerable<Book> books)
-    {
-        foreach (var item in books)
-        {
-            foreach (var item2 in item.GetWords())
-            {
-                yield return item2;
-            }
-        }
-    }
+    public static string[] Words(this IEnumerable<Book> books) => books.SelectMany(x=>x.SplittedText).Distinct().ToArray();
 }

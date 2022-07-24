@@ -51,7 +51,6 @@ public static class Moogle
         }
         return temp;
     }
-
     public static int LD(string source1, string source2)
     {
         var source1Length = source1.Length;
@@ -81,11 +80,6 @@ public static class Moogle
         }
         return matrix[source1Length, source2Length];
     }
-
-
-
-
-
     public static IEnumerable<SearchItem> Search(string query)
     {
         var x = query.Split(' ').ToList();
@@ -122,7 +116,7 @@ public static class Moogle
         }
         return count;
     }
-    public static float IDF(string word) => (float)Books.Count(x => x.Repetitions.Keys.Contains(word)) / Books.Count();
+    public static float IDF(string word) => ((float)Math.Log((float)Books.Count(x => x.Repetitions.Keys.Contains(word)) / Books.Count()));
     public static float TF(Book book, string word) => book.Repetitions.ContainsKey(word) ? book.Repetitions[word] / book.Repetitions.Values.Sum() : 0f;
     public static IEnumerable<Book> Scan()
     {
