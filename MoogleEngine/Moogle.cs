@@ -12,8 +12,14 @@ public static class Moogle
     public static SearchResult Query(string query)
     {
         SearchItem[] x = Search(query).ToArray();
-        if(x.Length==0) return new SearchResult(x,Suggestion(query));
-        else return new SearchResult(x,null!);
+
+
+        return x switch
+        {
+            SearchItem[] h when x.Length != 0 => new SearchResult(x, null!),
+            SearchItem[] h when Suggestion(query).Length != 0 => new SearchResult(Search(Suggestion(query)).ToArray(), Suggestion(query)),
+            _ => new SearchResult(new SearchItem[] { new SearchItem("No se encontro ningun resultado", "", 0) }, null!)
+        };
     }
 
     public static string Suggestion(string query)
@@ -29,7 +35,7 @@ public static class Moogle
                 bool cumple = false;
                 foreach (var item2 in Words)
                 {
-                    if(y.ContainsKey(item2)) continue;
+                    if (y.ContainsKey(item2)) continue;
                     int f = LD(item, item2);
                     if (f == 1)
                     {
@@ -39,8 +45,8 @@ public static class Moogle
                     }
                     if (f < 3) y.Add(item2, f);
                 }
-                if(y.Count!=0)
-                if(!cumple) temp+=y.MinBy(x=>x.Value).Key + " ";
+                if (y.Count != 0)
+                    if (!cumple) temp += y.MinBy(x => x.Value).Key + " ";
             }
         }
         return temp;
@@ -85,9 +91,8 @@ public static class Moogle
         var x = query.Split(' ').ToList();
         foreach (var item in Books)
         {
-            if (x.Exists(p => !item.Repetitions.Keys.Contains(p))) continue;
-
-            if (Score(item, query) != 0) yield return new SearchItem(item.Title, Snippet(item, query), Score(item, query));
+            if (x.Exists(p => item.Repetitions.Keys.Contains(p)))
+                if (Score(item, query) != 0) yield return new(item.Title, Snippet(item, query), Score(item, query));
         }
     }
     public static bool Exists<T>(int i, IEnumerable<T> a) => (i >= 0 && i < a.Count());
