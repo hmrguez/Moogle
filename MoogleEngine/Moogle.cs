@@ -86,7 +86,8 @@ public static class Moogle
         foreach (var item in Books)
         {
             if (x.Exists(p => item.Repetitions.Keys.Contains(p)))
-                if (Score(item, query) != 0) yield return new(item.Title, Snippet(item, query), Score(item, query));
+                if (Score(item, query) != 0) 
+                    yield return new(item.Title, Snippet(item, query), Score(item, query));
         }
     }
     public static bool Exists<T>(int i, IEnumerable<T> a) => (i >= 0 && i < a.Count());

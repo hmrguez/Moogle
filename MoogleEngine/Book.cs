@@ -18,5 +18,5 @@ public class Book
 
 public static class Helper
 {
-    public static string[] Words(this IEnumerable<Book> books) => books.SelectMany(x=>x.SplittedText).Distinct().ToArray();
+    public static string[] Words(this IEnumerable<Book> books) => books.SelectMany(x => x.SplittedText).Distinct().ToArray();
 }
