@@ -6,12 +6,11 @@ namespace MoogleEngine;
 public static class Moogle
 {
     public static Book[] Books = Scan().ToArray();
-
-    public static IEnumerable<string> Words = Books.Words();
+    public static string[] Words = Books.SelectMany(x => x.SplittedText).Distinct().ToArray();
 
     public static SearchResult Query(string query)
     {
-        SearchItem[] x = Search(query).ToArray();
+        SearchItem[] x = Search(query).OrderBy(x => x.Score).ToArray();
 
 
         return x switch
@@ -22,7 +21,44 @@ public static class Moogle
         };
     }
 
-    public static string Suggestion(string query)
+
+    #region Search and Scan
+    private static IEnumerable<SearchItem> Search(string query)
+    {
+        var x = query.Split(' ').ToList();
+        foreach (var item in Books)
+        {
+            if (x.Exists(p => item.Repetitions.Keys.Contains(p)))
+                if (Score(item, query) != 0)
+                    yield return new(item.Title, Snippet(item, query), Score(item, query));
+        }
+    }
+    private static IEnumerable<Book> Scan()
+    {
+        string path = Path.Combine(Directory.GetCurrentDirectory(), "../Content");
+        string[] archivos = Directory.GetFiles(path, "*.txt");
+        foreach (var item in archivos)
+        {
+            Dictionary<string, float> rep = new();
+            StreamReader sr = new StreamReader(item);
+            string text = sr.ReadToEnd();
+            string[] words = text.Split(new char[] { ' ', ',', '.', ';', ':' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var word in words)
+            {
+                if (!rep.ContainsKey(word)) rep.Add(word, 1);
+                else rep[word] += 1;
+            }
+            yield return new Book(Path.GetFileNameWithoutExtension(item), text, rep);
+        }
+    }
+    #endregion
+    
+    #region Utils
+    private static bool Exists<T>(int i, IEnumerable<T> a) => (i >= 0 && i < a.Count());
+    #endregion
+
+    #region Main
+    private static string Suggestion(string query)
     {
         string[] x = query.Split(' ');
         string temp = "";
@@ -51,7 +87,36 @@ public static class Moogle
         }
         return temp;
     }
-    public static int LD(string source1, string source2)
+    private static string Snippet(Book book, string query)
+    {
+        string[] words = query.Split(' ');
+        string result = "";
+        foreach (var item in words)
+        {
+            string temp = "";
+            int x = book.SplittedText.ToList().FindIndex(x => x == item);
+            for (int i = -5; i < 5; i++)
+            {
+                if (Exists(x + i, book.SplittedText)) temp += book.SplittedText[x + i] + " ";
+            }
+            result += temp + " ... ";
+        }
+        return result;
+    }
+    private static float Score(Book book, string query)
+    {
+        string[] words = query.Split(' ');
+        float count = 0;
+        foreach (var item in words)
+        {
+            count += TF(book, item) * IDF(item);
+        }
+        return count;
+    }
+    #endregion
+    
+    #region Math
+    private static int LD(string source1, string source2)
     {
         var source1Length = source1.Length;
         var source2Length = source2.Length;
@@ -80,61 +145,8 @@ public static class Moogle
         }
         return matrix[source1Length, source2Length];
     }
-    public static IEnumerable<SearchItem> Search(string query)
-    {
-        var x = query.Split(' ').ToList();
-        foreach (var item in Books)
-        {
-            if (x.Exists(p => item.Repetitions.Keys.Contains(p)))
-                if (Score(item, query) != 0) 
-                    yield return new(item.Title, Snippet(item, query), Score(item, query));
-        }
-    }
-    public static bool Exists<T>(int i, IEnumerable<T> a) => (i >= 0 && i < a.Count());
-    public static string Snippet(Book book, string query)
-    {
-        string[] words = query.Split(' ');
-        string result = "";
-        foreach (var item in words)
-        {
-            string temp = "";
-            int x = book.SplittedText.ToList().FindIndex(x => x == item);
-            for (int i = -5; i < 5; i++)
-            {
-                if (Exists(x + i, book.SplittedText)) temp += book.SplittedText[x + i] + " ";
-            }
-            result += temp + " ... ";
-        }
-        return result;
-    }
-    public static float Score(Book book, string query)
-    {
-        string[] words = query.Split(' ');
-        float count = 0;
-        foreach (var item in words)
-        {
-            count += TF(book, item) * IDF(item);
-        }
-        return count;
-    }
-    public static float IDF(string word) => ((float)Math.Log((float)Books.Count(x => x.Repetitions.Keys.Contains(word)) / Books.Count()));
-    public static float TF(Book book, string word) => book.Repetitions.ContainsKey(word) ? book.Repetitions[word] / book.Repetitions.Values.Sum() : 0f;
-    public static IEnumerable<Book> Scan()
-    {
-        string path = Path.Combine(Directory.GetCurrentDirectory(), "../Content");
-        string[] archivos = Directory.GetFiles(path, "*.txt");
-        foreach (var item in archivos)
-        {
-            Dictionary<string, float> rep = new();
-            StreamReader sr = new StreamReader(item);
-            string text = sr.ReadToEnd();
-            string[] words = text.Split(new char[] { ' ', ',', '.', ';', ':' }, StringSplitOptions.RemoveEmptyEntries);
-            foreach (var word in words)
-            {
-                if (!rep.ContainsKey(word)) rep.Add(word, 1);
-                else rep[word] += 1;
-            }
-            yield return new Book(Path.GetFileNameWithoutExtension(item), text, rep);
-        }
-    }
+    private static float IDF(string word) => ((float)Math.Log((float)Books.Count(x => x.Repetitions.Keys.Contains(word)) / Books.Count()));
+    private static float TF(Book book, string word) => book.Repetitions.ContainsKey(word) ? book.Repetitions[word] / book.Repetitions.Values.Sum() : 0f;
+    #endregion
+
 }
