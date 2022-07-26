@@ -1,5 +1,8 @@
 ﻿using MoogleEngine;
 using System.Diagnostics;
+using System.Collections;
+using System.Collections.Generic;
+
 
 internal class Program
 {
@@ -7,7 +10,7 @@ internal class Program
     {
         Stopwatch sw = new();
         sw.Start();
-        var words = Moogle.Words;
+        Moogle.Query("casa");
         sw.Stop();
         System.Console.WriteLine(sw.ElapsedMilliseconds);
     }

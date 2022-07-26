@@ -7,7 +7,8 @@ public class Book
         Title = title;
         FullText = fullText;
         Repetitions = repetitions;
-        SplittedText = FullText.Split(new char[] { ' ', ',', ';', ':', '/', '?', '!', ']', '[', '}', '{' }, StringSplitOptions.RemoveEmptyEntries);
+        var array = FullText.Where(x=> Char.IsPunctuation(x) || Char.IsSeparator(x) || Char.IsWhiteSpace(x)).Distinct().ToArray();
+        SplittedText = FullText.Split(array, StringSplitOptions.RemoveEmptyEntries);
     }
 
     public string Title { get; }
