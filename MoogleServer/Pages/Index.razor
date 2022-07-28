@@ -4,7 +4,6 @@
 
 <h1 class="top">Moogle</h1>
 
-
 <div class="header">
     <div class="inputBox">
         <input type="text" required="required" @bind="query">
@@ -12,8 +11,8 @@
     </div>
 
     <button type="default" class="btn-main" @onclick="RunQuery"><span>Search</span><i></i></button>
-
 </div>
+
 
 @if (!string.IsNullOrEmpty(result.Suggestion))
 {
@@ -34,10 +33,10 @@
     }
 </ul>
 
+
 @code {
     private string query = "";
     private SearchResult result = new SearchResult();
-
     private void RunQuery()
     {
         result = Moogle.Query(query);

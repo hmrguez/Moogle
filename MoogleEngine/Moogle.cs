@@ -5,8 +5,9 @@ namespace MoogleEngine;
 
 public static class Moogle
 {
+    public record Book(string Title, Dictionary<string, float> Repetitions, string FullText, string[] Words);
     public static Book[] Books = Scan().ToArray();
-    public static string[] Words = Books.SelectMany(x => x.SplittedText).Distinct().ToArray();
+    public static string[] Words = Books.SelectMany(x => x.Words).Distinct().ToArray();
 
     public static SearchResult Query(string query)
     {
@@ -33,26 +34,27 @@ public static class Moogle
                     yield return new(item.Title, Snippet(item, query), Score(item, query));
         }
     }
-    private static IEnumerable<Book> Scan()
+    public static IEnumerable<Book> Scan()
     {
         string path = Path.Combine(Directory.GetCurrentDirectory(), "../Content");
         string[] archivos = Directory.GetFiles(path, "*.txt");
         foreach (var item in archivos)
         {
-            Dictionary<string, float> rep = new();
+            Dictionary<string,float> repetitios = new();
             StreamReader sr = new StreamReader(item);
             string text = sr.ReadToEnd();
-            string[] words = text.Split(new char[] { ' ', ',', '.', ';', ':' }, StringSplitOptions.RemoveEmptyEntries);
+            var separators = text.Where(x => Char.IsPunctuation(x) || Char.IsSeparator(x) || Char.IsWhiteSpace(x)).Distinct().ToArray();
+            var words = text.Split(separators, StringSplitOptions.RemoveEmptyEntries);
             foreach (var word in words)
             {
-                if (!rep.ContainsKey(word)) rep.Add(word, 1);
-                else rep[word] += 1;
+                if (repetitios.ContainsKey(word)) repetitios[word] += 1;
+                else repetitios.Add(word, 1);
             }
-            yield return new Book(Path.GetFileNameWithoutExtension(item), text, rep);
+            yield return new Book(Path.GetFileNameWithoutExtension(item),repetitios,text,words);
         }
     }
     #endregion
-    
+
     #region Utils
     private static bool Exists<T>(int i, IEnumerable<T> a) => (i >= 0 && i < a.Count());
     #endregion
@@ -94,10 +96,10 @@ public static class Moogle
         foreach (var item in words)
         {
             string temp = "";
-            int x = book.SplittedText.ToList().FindIndex(x => x == item);
+            int x = book.Words.ToList().FindIndex(x => x == item);
             for (int i = -5; i < 5; i++)
             {
-                if (Exists(x + i, book.SplittedText)) temp += book.SplittedText[x + i] + " ";
+                if (Exists(x + i, book.Words)) temp += book.Words[x + i] + " ";
             }
             result += temp + " ... ";
         }
@@ -114,7 +116,7 @@ public static class Moogle
         return count;
     }
     #endregion
-    
+
     #region Math
     private static int LD(string source1, string source2)
     {
