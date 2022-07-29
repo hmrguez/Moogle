@@ -200,4 +200,5 @@ a,
 }
 .item{
     border-radius: 10px;
+    overflow: hidden;
 }

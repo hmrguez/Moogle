@@ -5,13 +5,17 @@ namespace MoogleEngine;
 
 public static class Moogle
 {
-    public record Book(string Title, Dictionary<string, float> Repetitions, string FullText, string[] Words);
+    public record Book(string Title, Dictionary<string, float> Repetitions, string FullText, string[] Words)
+    {
+        public bool Contains(string word) => Words.Contains(word);
+    }
+
     public static Book[] Books = Scan().ToArray();
     public static string[] Words = Books.SelectMany(x => x.Words).Distinct().ToArray();
 
     public static SearchResult Query(string query)
     {
-        SearchItem[] x = Search(query).OrderBy(x => x.Score).ToArray();
+        SearchItem[] x = Search(query).OrderByDescending(x => x.Score).ToArray();
 
 
         return x switch
@@ -26,12 +30,11 @@ public static class Moogle
     #region Search and Scan
     private static IEnumerable<SearchItem> Search(string query)
     {
-        var x = query.Split(' ').ToList();
+        var x = query.ParseSeparators();
         foreach (var item in Books)
         {
-            if (x.Exists(p => item.Repetitions.Keys.Contains(p)))
-                if (Score(item, query) != 0)
-                    yield return new(item.Title, Snippet(item, query), Score(item, query));
+            if (!Array.Exists(x, p => item.Contains(p))) continue;
+            if (Score(item, query) != 0) yield return new(item.Title, Snippet(item, query), Score(item, query));
         }
     }
     public static IEnumerable<Book> Scan()
@@ -40,7 +43,7 @@ public static class Moogle
         string[] archivos = Directory.GetFiles(path, "*.txt");
         foreach (var item in archivos)
         {
-            Dictionary<string,float> repetitios = new();
+            Dictionary<string, float> repetitios = new();
             StreamReader sr = new StreamReader(item);
             string text = sr.ReadToEnd();
             var separators = text.Where(x => Char.IsPunctuation(x) || Char.IsSeparator(x) || Char.IsWhiteSpace(x)).Distinct().ToArray();
@@ -50,19 +53,26 @@ public static class Moogle
                 if (repetitios.ContainsKey(word)) repetitios[word] += 1;
                 else repetitios.Add(word, 1);
             }
-            yield return new Book(Path.GetFileNameWithoutExtension(item),repetitios,text,words);
+            yield return new Book(Path.GetFileNameWithoutExtension(item), repetitios, text, words);
         }
     }
     #endregion
 
     #region Utils
     private static bool Exists<T>(int i, IEnumerable<T> a) => (i >= 0 && i < a.Count());
+    public static float TFIDF(Book book, string word) => IDF(word) * TF(book, word);
+    public static string[] ParseSeparators(this string query)
+    {
+        var separators = query.Where(x => !Char.IsLetterOrDigit(x)).ToArray();
+        string[] words = query.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+        return words;
+    }
     #endregion
 
     #region Main
     private static string Suggestion(string query)
     {
-        string[] x = query.Split(' ');
+        string[] x = query.Split(' ',StringSplitOptions.RemoveEmptyEntries);
         string temp = "";
         foreach (var item in x)
         {
@@ -91,27 +101,66 @@ public static class Moogle
     }
     private static string Snippet(Book book, string query)
     {
-        string[] words = query.Split(' ');
+        var words = query.ParseSeparators();
         string result = "";
         foreach (var item in words)
         {
-            string temp = "";
-            int x = book.Words.ToList().FindIndex(x => x == item);
-            for (int i = -5; i < 5; i++)
+            if (book.Words.Contains(item))
             {
-                if (Exists(x + i, book.Words)) temp += book.Words[x + i] + " ";
+                string temp = "";
+                int x = book.Words.ToList().FindIndex(x => x == item);
+                for (int i = -5; i < 5; i++)
+                {
+                    if (Exists(x + i, book.Words)) temp += book.Words[x + i] + " ";
+                }
+                result += temp + " ... ";
             }
-            result += temp + " ... ";
+
         }
         return result;
     }
     private static float Score(Book book, string query)
     {
-        string[] words = query.Split(' ');
+        string[] words = query.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         float count = 0;
-        foreach (var item in words)
+        for (int i = 0; i < words.Length; i++)
         {
-            count += TF(book, item) * IDF(item);
+            if (words[i] == "!" && book.Contains(words[i + 1])) return 0;
+            else if (words[i].StartsWith('!') && book.Contains(words[i].Substring(1))) return 0;
+            else if (words[i] == "^")
+            {
+                if (!book.Contains(words[i + 1])) return 0;
+                count += TFIDF(book, words[i + 1]);
+                i += 1;
+            }
+            else if(words[i].StartsWith("^")){
+                if(!book.Contains(words[i].Substring(1))) return 0;
+                count+=TFIDF(book,words[i].Substring(1));
+            }
+            else if (Exists(i + 1, words) && words[i + 1] == "~") continue;
+            else if (words[i] == "~")
+            {
+                int w1 = book.Words.ToList().IndexOf(words[i - 1]);
+                int w2 = book.Words.ToList().IndexOf(words[i + 1]);
+                count += (TFIDF(book, words[i - 1]) + TFIDF(book, words[i + 1])) * Math.Abs(w1 - w2);
+                i += 1;
+            }
+            else if (words[i].Contains("~"))
+            {
+                var spl = words[i].Split("~");
+                for (int j = 0; j < spl.Length - 1; j++)
+                {
+                    int w1 = Array.IndexOf(book.Words, spl[i]);
+                    int w2 = Array.IndexOf(book.Words, spl[i + 1]);
+                    count += (TFIDF(book, spl[i]) + TFIDF(book, spl[i + 1])) * Math.Abs(w1 - w2);
+                }
+            }
+            else if (words[i].StartsWith("+") && words[i].EndsWith("+") && book.Contains(words[i + 1])) count += words[i].Length;
+            else if (words[i].StartsWith("-") && words[i].EndsWith("-") && book.Contains(words[i + 1])) count -= words[i].Length;
+            else if (words[i].StartsWith("+") && book.Contains(words[i].Substring(words[i].LastIndexOf("+")+1))) count+=words[i].LastIndexOf("+")+ 1 + TFIDF(book,words[i].Substring(words[i].LastIndexOf("+")+1));
+            else if (words[i].StartsWith("-") && book.Contains(words[i].Substring(words[i].LastIndexOf("-")+1))) count+=-words[i].LastIndexOf("-")- 1 + TFIDF(book,words[i].Substring(words[i].LastIndexOf("-")+1));
+            
+            else count += TFIDF(book, words[i]);
         }
         return count;
     }
@@ -147,8 +196,19 @@ public static class Moogle
         }
         return matrix[source1Length, source2Length];
     }
-    private static float IDF(string word) => ((float)Math.Log((float)Books.Count(x => x.Repetitions.Keys.Contains(word)) / Books.Count()));
-    private static float TF(Book book, string word) => book.Repetitions.ContainsKey(word) ? book.Repetitions[word] / book.Repetitions.Values.Sum() : 0f;
+    private static float IDF(string word)
+    {
+
+        float x = Books.Count(x => x.Words.Contains(word));
+        if (x == 0) return 0;
+        float y = Books.Length / x;
+        return (float)Math.Log(y);
+    }
+    private static float TF(Book book, string word)
+    {
+        if (book.Contains(word)) return book.Repetitions[word] / book.Repetitions.Values.Sum();
+        return 0;
+    }
     #endregion
 
 }
