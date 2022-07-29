@@ -104,7 +104,6 @@ public static class Moogle
         var words = query.ParseSeparators();
         string result = "";
         foreach (var item in words)
-        {
             if (book.Words.Contains(item))
             {
                 string temp = "";
@@ -115,8 +114,6 @@ public static class Moogle
                 }
                 result += temp + " ... ";
             }
-
-        }
         return result;
     }
     private static float Score(Book book, string query)
@@ -130,6 +127,12 @@ public static class Moogle
             {
                 case "!" when book.Contains(words[i + 1]): return 0;
                 case "^" when !book.Contains(words[i + 1]): return 0;
+                case "^" when book.Contains(words[i + 1]):
+                    {
+                        count += TFIDF(book, words[i + 1]);
+                        i += 1;
+                        break;
+                    }
                 case string a when a.StartsWith('!') && book.Contains(a.Substring(1)): return 0;
                 case string a when a.StartsWith('^') && !book.Contains(a.Substring(1)): return 0;
                 case string a when a.StartsWith('^') && book.Contains(a.Substring(1)): count += TFIDF(book, a.Substring(1)); break;
@@ -161,43 +164,6 @@ public static class Moogle
                     }
                 default: count += TFIDF(book, words[i]); break;
             }
-
-            // if (words[i] == "!" && book.Contains(words[i + 1])) return 0;
-            // else if (words[i].StartsWith('!') && book.Contains(words[i].Substring(1))) return 0;
-            // else if (words[i] == "^")
-            // {
-            //     if (!book.Contains(words[i + 1])) return 0;
-            //     count += TFIDF(book, words[i + 1]);
-            //     i += 1;
-            // }
-            // else if(words[i].StartsWith("^")){
-            //     if(!book.Contains(words[i].Substring(1))) return 0;
-            //     count+=TFIDF(book,words[i].Substring(1));
-            // }
-            // else if (Exists(i + 1, words) && words[i + 1] == "~") continue;
-            // else if (words[i] == "~")
-            // {
-            //     int w1 = book.Words.ToList().IndexOf(words[i - 1]);
-            //     int w2 = book.Words.ToList().IndexOf(words[i + 1]);
-            //     count += (TFIDF(book, words[i - 1]) + TFIDF(book, words[i + 1])) * Math.Abs(w1 - w2);
-            //     i += 1;
-            // }
-            // else if (words[i].Contains("~"))
-            // {
-            //     var spl = words[i].Split("~");
-            //     for (int j = 0; j < spl.Length - 1; j++)
-            //     {
-            //         int w1 = Array.IndexOf(book.Words, spl[i]);
-            //         int w2 = Array.IndexOf(book.Words, spl[i + 1]);
-            //         count += (TFIDF(book, spl[i]) + TFIDF(book, spl[i + 1])) * Math.Abs(w1 - w2);
-            //     }
-            // }
-            // else if (words[i].StartsWith("+") && words[i].EndsWith("+") && book.Contains(words[i + 1])) count += words[i].Length;
-            // else if (words[i].StartsWith("-") && words[i].EndsWith("-") && book.Contains(words[i + 1])) count -= words[i].Length;
-            // else if (words[i].StartsWith("+") && book.Contains(words[i].Substring(words[i].LastIndexOf("+")+1))) count+=words[i].LastIndexOf("+")+ 1 + TFIDF(book,words[i].Substring(words[i].LastIndexOf("+")+1));
-            // else if (words[i].StartsWith("-") && book.Contains(words[i].Substring(words[i].LastIndexOf("-")+1))) count+=-words[i].LastIndexOf("-")- 1 + TFIDF(book,words[i].Substring(words[i].LastIndexOf("-")+1));
-
-            // else count += TFIDF(book, words[i]);
         }
         return count;
     }
