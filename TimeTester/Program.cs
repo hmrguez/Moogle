@@ -1,4 +1,5 @@
 ﻿using MoogleEngine;
+using Tester;
 using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
@@ -6,8 +7,19 @@ using System.Collections.Generic;
 
 internal class Program
 {
-    private static void Main(string[] args)
+
+    public static void Main()
     {
-        var x = Moogle.Query("casa");
+        var x = new Test(new(Wrapper.Scan,"Scan"),new(Wrapper.Search,"Search"));
+        x.Run();
+        System.Console.WriteLine(x);
     }
 }
+
+static class Wrapper
+{
+    public static void Scan() { Moogle.Scan(); }
+    public static void Search() { Moogle.ParseSeparators("casa,string,qwooowe+qwe.qewpo"); }
+
+}
+
