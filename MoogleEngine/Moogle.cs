@@ -28,7 +28,7 @@ public static class Moogle
 
 
     #region Search and Scan
-    private static IEnumerable<SearchItem> Search(string query)
+    public static IEnumerable<SearchItem> Search(string query)
     {
         var x = query.ParseSeparators();
         foreach (var item in Books)
@@ -99,7 +99,7 @@ public static class Moogle
         }
         return temp;
     }
-    private static string Snippet(Book book, string query)
+    public static string Snippet(Book book, string query)
     {
         var words = query.ParseSeparators();
         string result = "";
@@ -107,7 +107,7 @@ public static class Moogle
             if (book.Words.Contains(item))
             {
                 string temp = "";
-                int x = book.Words.ToList().FindIndex(x => x == item);
+                int x = Array.FindIndex(book.Words,x=>x==item);
                 for (int i = -5; i < 5; i++)
                 {
                     if (Exists(x + i, book.Words)) temp += book.Words[x + i] + " ";

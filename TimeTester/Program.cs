@@ -10,7 +10,9 @@ internal class Program
 
     public static void Main()
     {
-        var x = new Test(new(Wrapper.Scan,"Scan"),new(Wrapper.Search,"Search"));
+        var x = new Test((System.Console.WriteLine, "CW"),
+                         (Wrapper.Search, "Search"),
+                         (Wrapper.Snippet, "Snippet"));
         x.Run();
         System.Console.WriteLine(x);
     }
@@ -19,7 +21,8 @@ internal class Program
 static class Wrapper
 {
     public static void Scan() { Moogle.Scan(); }
-    public static void Search() { Moogle.ParseSeparators("casa,string,qwooowe+qwe.qewpo"); }
+    public static void Search() { Moogle.Search("never ! prenda").ToArray(); }
+    public static void Snippet() {Moogle.Snippet(Moogle.Books[0],"casa");}
 
 }
 

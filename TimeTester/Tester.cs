@@ -28,7 +28,7 @@ public record Test(params (Action Actions, string name)[] casa)
             {   
                 temp += table[i,j] + " | ";
             }
-            temp+="\n" + "--------" + "\n";
+            temp+="\n" + "-----------------" + "\n";
         }
         return temp;
     }
