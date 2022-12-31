@@ -1,15 +1,21 @@
-﻿namespace MoogleEngine;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace MoogleEngine;
 
 public static class Moogle
 {
-    public record Book(string Name, Trie Words);
+    public record Book(string Name, string Text, Trie Words);
+
+    private static Book[] _books = Scan().ToArray();
     
     public static SearchResult Query(string query)
     {
-        throw new NotImplementedException();
+        var temp = _books.Select(x => new SearchItem(x.Name, "12", 1));
+        var temp2 = new SearchResult(temp.ToArray(), "as");
+        return temp2;
     }
 
-    public static IEnumerable<Book> Scan()
+    private static IEnumerable<Book> Scan()
     {
         var path = Path.Combine(Directory.GetCurrentDirectory(), "../Content");
         var files = Directory.GetFiles(path, "*.txt");
@@ -28,7 +34,7 @@ public static class Moogle
                 trie.Insert(word);
             }
 
-            yield return new Book(file, trie);
+            yield return new Book(file, text, trie);
         }
     }
 }
