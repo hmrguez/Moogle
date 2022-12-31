@@ -15,11 +15,17 @@ public static class Moogle
         return temp2;
     }
 
-    private static IEnumerable<Book> Scan()
+    public static IEnumerable<Book> Scan()
     {
-        var path = Path.Combine(Directory.GetCurrentDirectory(), "../Content");
+        var path = Path.Combine(Directory.GetCurrentDirectory(), "../../../../Content");
+        Console.WriteLine();
+        Console.WriteLine(path);
+        Console.WriteLine();
+        
         var files = Directory.GetFiles(path, "*.txt");
 
+        
+        
         foreach (var file in files)
         {
             var trie = new Trie('^');

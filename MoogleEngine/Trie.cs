@@ -4,21 +4,16 @@ public sealed class Trie
 {
     public char Letter { get; set; }
     public int Reps { get; set; }
-    public Trie[] Children { get; set; } = new Trie[27];
+    private Trie[] Children { get; set; } = new Trie[27];
 
     public Trie(char letter) => Letter = letter;
 
-    public (Trie, int) PrefixQuery(string word)
-    {
-        return PrefixQuery(word, 0);
-    }
-
-    public (Trie, int) PrefixQuery(string word, int pos)
+    private (Trie, int) PrefixQuery(string word) => PrefixQuery(word, 0);
+    private (Trie, int) PrefixQuery(string word, int pos)
     {
         if (pos >= word.Length) return (this, pos);
         var next = Utils.CharToIntParse(word[pos]);
-        if (Children[next] is null) return (this, pos);
-        return Children[next].PrefixQuery(word, pos + 1);
+        return Children[next] is null ? (this, pos) : Children[next].PrefixQuery(word, pos + 1);
     }
 
     public void Insert(string word)
@@ -37,5 +32,11 @@ public sealed class Trie
         var next = Utils.CharToIntParse(word[pos]);
         Children[next] = new Trie(word[pos]);
         Children[next].Insert(word,pos+1);
+    }
+
+    public Trie Head(string word)
+    {
+        var pQuery = PrefixQuery(word);
+        return pQuery.Item2 == word.Length && pQuery.Item1.Reps > 0 ? pQuery.Item1 : null;
     }
 }
