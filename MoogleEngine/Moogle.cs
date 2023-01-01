@@ -5,24 +5,24 @@ namespace MoogleEngine;
 
 public static class Moogle
 {
-    private record Book(string Name, string Text, Trie Words);
-    private static readonly Book[] Books = Scan().ToArray();
+    public record Book(string Name, string Text, Trie Words);
+    public static readonly Book[] Books = Scan().ToArray();
     
     public static SearchResult Query(string query)
     {
-        var temp = Books.Select(x => new SearchItem(x.Name, "12", 1));
-        var temp2 = new SearchResult(temp.ToArray(), "as");
-        return temp2;
+        var searchQuery = Search(query).ToArray();
+        var suggestion = "";
+        return new SearchResult(searchQuery, suggestion);
     }
 
-    public static IEnumerable<SearchItem> Search(string query)
+    private static IEnumerable<SearchItem> Search(string query)
     {
         var sQuery = query.Split(' ');
 
         foreach (var book in Books)
         {
             var score = sQuery.Sum(word => Score(word, book, Books));
-            if(score < 0) continue;
+            if(score <= 0) continue;
             
             var snippets = sQuery.Select(word => Snippet(word, book)).Where(x=>x!=string.Empty);
             var jointSnippet = string.Join(" ", snippets);
@@ -30,10 +30,11 @@ public static class Moogle
         }
     }
     
-    private static float Score(string word, Book book, Book[] corpus)
+    public static float Score(string word, Book book, Book[] corpus)
     {
         var head = book.Words.Head(word);
-        var tf = head?.Reps / book.Words.WordCount ?? 0;
+        if (head is null) return 0;
+        float tf = (float)head.Reps / (float)book.Words.WordCount;
         var idf = MathF.Log((float)corpus.Length / (float)(1 + corpus.Count(x => x.Words.Contains(word))));
 
         return tf * idf;
