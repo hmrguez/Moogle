@@ -14,10 +14,10 @@ public static class Moogle
         var temp2 = new SearchResult(temp.ToArray(), "as");
         return temp2;
     }
-
-    public static IEnumerable<Book> Scan()
+    
+    private static IEnumerable<Book> Scan()
     {
-        var path = Path.Combine(Directory.GetCurrentDirectory(), "../../../../Content");
+        var path = Path.Combine(Directory.GetCurrentDirectory(), "../Content");
         var files = Directory.GetFiles(path, "*.txt");
         
         foreach (var file in files)
@@ -39,7 +39,7 @@ public static class Moogle
                 trie.Insert(word);
             }
 
-            yield return new Book(file, text, trie);
+            yield return new Book(Path.GetFileNameWithoutExtension(file), text, trie);
         }
     }
 }

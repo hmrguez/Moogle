@@ -2,6 +2,7 @@
 
 public sealed class Trie
 {
+    public int WordCount { get; set; }
     public char Letter { get; set; }
     public int Reps { get; set; }
     public List<Trie> Children { get; set; } = new();
@@ -18,6 +19,7 @@ public sealed class Trie
 
     public void Insert(string word)
     {
+        WordCount++;
         var pQuery = PrefixQuery(word);
         pQuery.Item1.Insert(word, pQuery.Item2);
     }
@@ -46,6 +48,12 @@ public sealed class Trie
     }
 
     private Trie Next(char c) => Children.Where(x => x is not null).FirstOrDefault(x => x.Letter == c);
+
+    public bool Contains(string word)
+    {
+        var pQuery = PrefixQuery(word);
+        return pQuery.Item2 == word.Length && pQuery.Item1.Reps > 0;
+    }
 
     public override string ToString() => Letter + " reps:" + Reps;
 }
