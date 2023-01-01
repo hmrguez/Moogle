@@ -18,22 +18,21 @@ public static class Moogle
     public static IEnumerable<Book> Scan()
     {
         var path = Path.Combine(Directory.GetCurrentDirectory(), "../../../../Content");
-        Console.WriteLine();
-        Console.WriteLine(path);
-        Console.WriteLine();
-        
         var files = Directory.GetFiles(path, "*.txt");
-
-        
         
         foreach (var file in files)
         {
             var trie = new Trie('^');
             var sr = new StreamReader(file);
             var text = sr.ReadToEnd();
-
-            var separators = text.Where(char.IsSeparator).ToArray();
-            var words = text.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+            var lowerText = text.ToLower(); 
+                
+            var separators = lowerText
+                .Where(x=>char.IsSeparator(x) || char.IsPunctuation(x) || char.IsWhiteSpace(x))
+                .Distinct()
+                .ToArray();
+            
+            var words = lowerText.Split(separators, StringSplitOptions.RemoveEmptyEntries);
 
             foreach (var word in words)
             {

@@ -1,5 +1,4 @@
 ﻿using MoogleEngine;
 
-var temp = Moogle.Scan();
+var trie = new Trie('^');
 
-Console.WriteLine(temp.Count());
