@@ -5,7 +5,7 @@ namespace MoogleEngine;
 
 public static class Moogle
 {
-    public record Book(string Name, string Text, Trie Words);
+    public record Book(string Name, string Text, string LowerText, Trie Words);
     private static readonly Book[] Books = Scan().ToArray();
     
     public static SearchResult Query(string query)
@@ -17,7 +17,7 @@ public static class Moogle
 
     private static IEnumerable<SearchItem> Search(string query)
     {
-        var sQuery = query.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var sQuery = query.ToLower().RemoveDiacritics().Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
         foreach (var book in Books)
         {
@@ -45,6 +45,7 @@ public static class Moogle
 
             if (word.StartsWith('^') && score == 0) return 0;
             if (word.StartsWith('!') && score > 0) return 0;
+            if (word.StartsWith('*')) score*= 1+StringManipulation.GetLastCharOfStar(word);
             
             allScore += score;
         }
@@ -63,7 +64,7 @@ public static class Moogle
             var trie = new Trie('^');
             var sr = new StreamReader(file);
             var text = sr.ReadToEnd();
-            var lowerText = text.ToLower(); 
+            var lowerText = text.ToLower().RemoveDiacritics(); 
                 
             var separators = lowerText
                 .Where(x=>char.IsSeparator(x) || char.IsPunctuation(x) || char.IsWhiteSpace(x))
@@ -77,7 +78,7 @@ public static class Moogle
                 trie.Insert(word);
             }
 
-            yield return new Book(Path.GetFileNameWithoutExtension(file), text, trie);
+            yield return new Book(Path.GetFileNameWithoutExtension(file), text, lowerText, trie);
         }
     }
 }
