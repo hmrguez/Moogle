@@ -6,7 +6,7 @@ namespace MoogleEngine;
 public static class Moogle
 {
     public record Book(string Name, string Text, Trie Words);
-    public static readonly Book[] Books = Scan().ToArray();
+    private static readonly Book[] Books = Scan().ToArray();
     
     public static SearchResult Query(string query)
     {
@@ -17,45 +17,41 @@ public static class Moogle
 
     private static IEnumerable<SearchItem> Search(string query)
     {
-        var sQuery = query.Split(' ');
+        var sQuery = query.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
         foreach (var book in Books)
         {
-            var score = sQuery.Sum(word => Score(word, book, Books));
+            var score = JointScore(sQuery, book, Books);
             if(score <= 0) continue;
+
+            var jointSnippet = StringManipulation.JointSnippet(sQuery, book);
             
-            var snippets = sQuery.Select(word => Snippet(word, book)).Where(x=>x!=string.Empty);
-            var jointSnippet = string.Join(" ", snippets);
             yield return new SearchItem(book.Name, jointSnippet, score);
         }
     }
-    
-    public static float Score(string word, Book book, Book[] corpus)
-    {
-        var head = book.Words.Head(word);
-        if (head is null) return 0;
-        float tf = (float)head.Reps / (float)book.Words.WordCount;
-        var idf = MathF.Log((float)corpus.Length / (float)(1 + corpus.Count(x => x.Words.Contains(word))));
 
-        return tf * idf;
-    }
-
-    private static string Snippet(string word, Book book)
+    private static float JointScore(string[] sQuery, Book book, Book[] corpus)
     {
-        var temp = book.Text;
-        var firstPosition = Algorithms.KnuthMorrisPratt(book.Text, word).FirstOrDefault();
-        if (firstPosition==0) return string.Empty;
-        var sb = new StringBuilder();
-        
-        for (int i = -40; i < 40; i++)
+
+        var fQuery = sQuery.Select(StringManipulation.FormatQuery).ToArray();
+        float allScore = 0;
+
+        for (int i = 0; i < sQuery.Length; i++)
         {
-            int positionInText = firstPosition + i;
-            if (positionInText >= 0 && positionInText < temp.Length)
-                sb.Append(temp[positionInText]);
+            var word = sQuery[i];
+            var fWord = fQuery[i];
+
+            var score = Algorithms.Tfidf(fWord, book, corpus);
+
+            if (word.StartsWith('^') && score == 0) return 0;
+            if (word.StartsWith('!') && score > 0) return 0;
+            
+            allScore += score;
         }
 
-        return sb.ToString();
+        return allScore;
     }
+
 
     private static IEnumerable<Book> Scan()
     {

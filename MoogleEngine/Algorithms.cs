@@ -15,11 +15,17 @@ public static class Algorithms
             }
 
             if (p[q] == t[i])
+            {
                 q++;
+            }
             if (q == p.Length)
             {
-                yield return i - p.Length + 1;
                 q = pi[q - 1];
+
+                if(i-p.Length >= 0 && char.IsLetterOrDigit(t[i-p.Length])) continue;
+                if(i+1 < t.Length && char.IsLetterOrDigit(t[i+1])) continue;
+                
+                yield return i - p.Length + 1;
             }
         }
     }
@@ -46,5 +52,15 @@ public static class Algorithms
     public static int LevenshteinDistance(string src1, string src2)
     {
         throw new NotImplementedException();
+    }
+
+    public static float Tfidf(string word, Moogle.Book book, Moogle.Book[] corpus)
+    {
+        var head = book.Words.Head(word);
+        if (head is null) return 0;
+        float tf = (float)head.Reps / (float)book.Words.WordCount;
+        var idf = MathF.Log((float)corpus.Length / (float)(1 + corpus.Count(x => x.Words.Contains(word))));
+
+        return tf * idf;
     }
 }
