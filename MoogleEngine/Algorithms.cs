@@ -63,4 +63,15 @@ public static class Algorithms
 
         return tf * idf;
     }
+    
+    public static float TildeDistance(string word1, string word2, Moogle.Book book)
+    {
+        var word1Kmp = KnuthMorrisPratt(book.LowerText, word1).ToArray();
+        var word2Kmp = KnuthMorrisPratt(book.LowerText, word2).ToArray();
+
+        if (!word1Kmp.Any() || !word2Kmp.Any()) return -1;
+        
+        var minDistance = (from i in word1Kmp from j in word2Kmp select i * j).Where(x=>x>0).Min();
+        return minDistance;
+    }
 }

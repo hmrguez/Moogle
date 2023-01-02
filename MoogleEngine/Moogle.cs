@@ -1,7 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Text;
-
-namespace MoogleEngine;
+﻿namespace MoogleEngine;
 
 public static class Moogle
 {
@@ -21,7 +18,7 @@ public static class Moogle
 
         foreach (var book in Books)
         {
-            var score = JointScore(sQuery, book, Books);
+            var score = Score(sQuery, book, Books);
             if(score <= 0) continue;
 
             var jointSnippet = StringManipulation.JointSnippet(sQuery, book);
@@ -30,7 +27,7 @@ public static class Moogle
         }
     }
 
-    private static float JointScore(string[] sQuery, Book book, Book[] corpus)
+    private static float Score(string[] sQuery, Book book, Book[] corpus)
     {
 
         var fQuery = sQuery.Select(StringManipulation.FormatQuery).ToArray();
@@ -40,9 +37,25 @@ public static class Moogle
         {
             var word = sQuery[i];
             var fWord = fQuery[i];
+            
+            if(i+1 < sQuery.Length && sQuery[i+1]=="~") continue;
+            
+            if (word == "~")
+            {
+                var sumScore = Algorithms.Tfidf(fQuery[i - 1], book, corpus) +
+                               Algorithms.Tfidf(fQuery[i + 1], book, corpus);
+                var tildeDistance = Algorithms.TildeDistance(fQuery[i - 1], fQuery[i + 1], book);
+                
+                if (tildeDistance < 0) return 0;
+                
+                allScore += sumScore / tildeDistance;
+
+                i++;
+                continue;
+            }
 
             var score = Algorithms.Tfidf(fWord, book, corpus);
-
+            
             if (word.StartsWith('^') && score == 0) return 0;
             if (word.StartsWith('!') && score > 0) return 0;
             if (word.StartsWith('*')) score*= 1+StringManipulation.GetLastCharOfStar(word);

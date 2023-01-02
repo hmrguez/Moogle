@@ -1,5 +1,4 @@
-﻿using System.Buffers;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text;
 
 namespace MoogleEngine;
@@ -18,6 +17,7 @@ public static class StringManipulation
     
     private static string Snippet(string word, Moogle.Book book)
     {
+        if(word=="~") return string.Empty;
         var text = book.Text;
         var firstPosition = Algorithms.KnuthMorrisPratt(book.LowerText, word).FirstOrDefault();
         if (firstPosition==0) return string.Empty;
@@ -65,4 +65,6 @@ public static class StringManipulation
         
         throw new Exception("This shouldn't Happen");
     }
+    
+    
 }
