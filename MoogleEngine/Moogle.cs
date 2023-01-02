@@ -8,7 +8,9 @@ public static class Moogle
     public static SearchResult Query(string query)
     {
         var searchQuery = Search(query).ToArray();
-        var suggestion = "";
+        var suggestion = searchQuery.Length > 0 
+            ? string.Empty 
+            : Suggestion(query.ToLower().RemoveDiacritics().Split(' ', StringSplitOptions.RemoveEmptyEntries), 3);
         return new SearchResult(searchQuery, suggestion);
     }
 
@@ -66,6 +68,19 @@ public static class Moogle
         return allScore;
     }
 
+    private static string Suggestion(string[] sQuery, int tolerance)
+    {
+        var suggestions = sQuery.Select(StringManipulation.FormatQuery).Select(x=>Suggestion(x,tolerance));
+        var result = string.Join(' ', suggestions);
+        return result;
+    }
+
+    private static string Suggestion(string word, int tolerance)
+    {
+        return Books
+            .SelectMany(book => book.Words.SearchByTolerance(word, tolerance))
+            .MinBy(x => Algorithms.LevenshteinDistance(x, word));
+    }
 
     private static IEnumerable<Book> Scan()
     {

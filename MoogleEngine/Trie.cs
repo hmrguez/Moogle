@@ -1,4 +1,6 @@
-﻿namespace MoogleEngine;
+﻿using System.Globalization;
+
+namespace MoogleEngine;
 
 public sealed class Trie
 {
@@ -53,6 +55,27 @@ public sealed class Trie
     {
         var pQuery = PrefixQuery(word);
         return pQuery.Item2 == word.Length && pQuery.Item1.Reps > 0;
+    }
+
+    public IEnumerable<string> SearchByTolerance(string similarTo, int tolerance) 
+        => SearchByTolerance("", similarTo, 0, tolerance, tolerance);
+
+    private IEnumerable<string> SearchByTolerance(string word, string similarTo, int pos, int tolerance, int initTolerance)
+    {
+        if (tolerance == -1) yield break;
+        
+        if (Reps != 0 && (tolerance >= Math.Abs(similarTo.Length - word.Length)))
+            yield return word;
+            
+        foreach (var child in Children)
+        {
+            if (pos < similarTo.Length && similarTo[pos] == child.Letter)
+                foreach (var item in child.SearchByTolerance(word+child.Letter,similarTo,pos+1,tolerance, initTolerance))
+                    yield return item;
+            else
+                foreach (var item in child.SearchByTolerance(word+child.Letter,similarTo,pos+1,tolerance-1,initTolerance))
+                    yield return item;
+        }
     }
 
     public override string ToString() => Letter + " reps:" + Reps;
