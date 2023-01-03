@@ -11,6 +11,9 @@ public static class Moogle
         var suggestion = searchQuery.Length > 0 
             ? string.Empty 
             : Suggestion(query.ToLower().RemoveDiacritics().Split(' ', StringSplitOptions.RemoveEmptyEntries), 3);
+        searchQuery = searchQuery.Length > 0
+            ? searchQuery
+            : Search(suggestion).ToArray();
         return new SearchResult(searchQuery, suggestion);
     }
 
@@ -68,7 +71,7 @@ public static class Moogle
         return allScore;
     }
 
-    private static string Suggestion(string[] sQuery, int tolerance)
+    private static string Suggestion(IEnumerable<string> sQuery, int tolerance)
     {
         var suggestions = sQuery.Select(StringManipulation.FormatQuery).Select(x=>Suggestion(x,tolerance));
         var result = string.Join(' ', suggestions);
