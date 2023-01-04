@@ -13,6 +13,12 @@
     <button type="default" class="btn-main" @onclick="RunQuery"><span>Search</span><i></i></button>
 </div>
 
+@if (time > 0)
+{
+    <div class="oi-clock">
+        Time Elapsed: @time
+    </div>
+}
 
 @if (!string.IsNullOrEmpty(result.Suggestion))
 {
@@ -38,8 +44,13 @@
 @code {
     private string query = "";
     private SearchResult result = new SearchResult();
+    private float time = 0;
     private void RunQuery()
     {
+        var timer = new System.Diagnostics.Stopwatch();
+        timer.Start();
         result = Moogle.Query(query);
+        timer.Stop();
+        time = timer.ElapsedMilliseconds;
     }
 }

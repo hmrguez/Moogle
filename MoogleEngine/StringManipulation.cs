@@ -18,19 +18,23 @@ public static class StringManipulation
     private static string Snippet(string word, Moogle.Book book)
     {
         if(word=="~") return string.Empty;
-        var text = book.Text;
+        ReadOnlySpan<char> text = book.Text;
         var firstPosition = Algorithms.KnuthMorrisPratt(book.LowerText, word).FirstOrDefault();
         if (firstPosition==0) return string.Empty;
-        var sb = new StringBuilder();
+
+        int startIndex = int.MaxValue;
+        int endIndex = int.MinValue;
         
         for (int i = -40; i < 40; i++)
         {
-            int positionInText = firstPosition + i;
-            if (positionInText >= 0 && positionInText < text.Length)
-                sb.Append(text[positionInText]);
+            int currentPosition = firstPosition + i;
+            if (currentPosition < startIndex)
+                startIndex = currentPosition;
+            if (currentPosition > endIndex)
+                endIndex = currentPosition;
         }
 
-        return sb.ToString();
+        return text.Slice(startIndex, endIndex-startIndex-1).ToString();
     }
     
     public static string FormatQuery(string word)

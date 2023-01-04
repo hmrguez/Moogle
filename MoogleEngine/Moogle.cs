@@ -95,8 +95,8 @@ public static class Moogle
             var trie = new Trie('^');
             var sr = new StreamReader(file);
             var text = sr.ReadToEnd();
-            var lowerText = text.ToLower().RemoveDiacritics(); 
-                
+            var lowerText = text.ToLower().RemoveDiacritics();
+            
             var separators = lowerText
                 .Where(x=>char.IsSeparator(x) || char.IsPunctuation(x) || char.IsWhiteSpace(x))
                 .Distinct()
@@ -105,9 +105,7 @@ public static class Moogle
             var words = lowerText.Split(separators, StringSplitOptions.RemoveEmptyEntries);
 
             foreach (var word in words)
-            {
                 trie.Insert(word);
-            }
 
             yield return new Book(Path.GetFileNameWithoutExtension(file), text, lowerText, trie);
         }
